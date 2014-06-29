@@ -1,1 +1,3 @@
-
+*.pyc
+*.pgm
+*.sift
