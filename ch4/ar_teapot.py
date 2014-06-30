@@ -6,6 +6,7 @@ import pygame, pygame.image
 from pygame.locals import *
 import pickle
 from numpy import *
+import sys
 def set_projection_from_camera(K):
     """ Set view from a camera calibration matrix. """
     glMatrixMode(GL_PROJECTION)
@@ -42,24 +43,28 @@ def set_modelview_from_camera(Rt):
     m = M.flatten()
     # replace model view with the new matrix
     glLoadMatrixf(m)
-def draw_background(imname):
-    """ Draw background image using a quad. """
+def load_texture(imname):
     # load background image (should be .bmp) to OpenGL texture
+    bg_image = pygame.image.load(imname).convert() 
+    bg_data = pygame.image.tostring(bg_image,"RGBX",1)
+    tex_id=glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D,tex_id) 
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,bg_data) 
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST) 
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST)
+    return tex_id
+def draw_background(texId):
+    """ Draw background image using a quad. """
+    glDisable(GL_LIGHTING)
     glMatrixMode(GL_MODELVIEW) 
     glLoadIdentity()
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    bg_image = pygame.image.load(imname).convert() 
-    bg_data = pygame.image.tostring(bg_image,"RGBX",1)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     # bind the texture
     glEnable(GL_TEXTURE_2D)
-    glBindTexture(GL_TEXTURE_2D,glGenTextures(1)) 
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,bg_data) 
-    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST) 
-    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST)
+    glBindTexture(GL_TEXTURE_2D,tex_id) 
     # create quad to fill the whole window
     glBegin(GL_QUADS)
     glTexCoord2f(0.0,0.0); glVertex3f(-1.0,-1.0,-1.0)
@@ -67,13 +72,12 @@ def draw_background(imname):
     glTexCoord2f(1.0,1.0); glVertex3f( 1.0, 1.0,-1.0) 
     glTexCoord2f(0.0,1.0); glVertex3f(-1.0, 1.0,-1.0) 
     glEnd()
-    # clear the texture
-    glDeleteTextures(1)
+    glDisable(GL_TEXTURE_2D)
 def draw_teapot(size):
     """ Draw a red teapot at the origin. """
     glEnable(GL_LIGHTING) 
     glEnable(GL_LIGHT0) 
-    glEnable(GL_DEPTH_TEST) 
+    glEnable(GL_DEPTH_TEST)
     glClear(GL_DEPTH_BUFFER_BIT)
     # draw red teapot
     glMaterialfv(GL_FRONT,GL_AMBIENT,[0,0,0,0]) 
@@ -87,17 +91,22 @@ def setup():
     pygame.init() 
     pygame.display.set_mode((width,height),OPENGL | DOUBLEBUF) 
     pygame.display.set_caption('OpenGL AR demo')
+if __name__=='__main__':
     # load camera data
-with open('ar_camera.pkl','r') as f: 
-    K = pickle.load(f)
-    Rt = pickle.load(f)
-setup() 
-while True:
-    event = pygame.event.poll()
-    if event.type in (QUIT,KEYDOWN):
-        exit()
-    draw_background('../data/book_perspective.bmp') 
-    set_projection_from_camera(K) 
-    set_modelview_from_camera(Rt) 
-    draw_teapot(0.2)
-    pygame.display.flip()
+    with open('ar_camera.pkl','r') as f: 
+        K = pickle.load(f)
+        Rt = pickle.load(f)
+    setup() 
+    tex_id=load_texture('../data/book_perspective.bmp')
+    while True:
+        for event in  pygame.event.get():
+            if event.type in (QUIT,KEYDOWN):
+                pygame.quit()
+                glDeleteTextures(tex_id)
+                sys.exit(0)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        draw_background(tex_id) 
+        set_projection_from_camera(K) 
+        set_modelview_from_camera(Rt) 
+        draw_teapot(0.2)
+        pygame.display.flip()
