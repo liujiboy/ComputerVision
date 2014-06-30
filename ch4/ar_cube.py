@@ -122,5 +122,8 @@ imshow(im1)
 plot(box_cam2[0,:],box_cam2[1,:],linewidth=3)
 title('3D points projected in second image')
 axis('off')
-
 show()
+import pickle
+with open('ar_camera.pkl','w') as f: 
+    pickle.dump(K,f) 
+    pickle.dump(dot(linalg.inv(K),cam2.P),f)
