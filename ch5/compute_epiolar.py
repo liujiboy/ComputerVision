@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sfm
 from numpy import *
 from matplotlib.pylab import *
@@ -19,15 +20,15 @@ imshow(im1)
 # plot each line individually, this gives nice colors
 for i in range(5):
     sfm.plot_epipolar_line(im1,F,x2[:,i],e,True)
-#axis('off')
-#figure()
-#imshow(im2)
+    plot(x1[0,i],x1[1,i],'o')
+title("epipole, epipolar_line and x1 on image1")
+axis('off')
+show()
+figure()
+imshow(im2)
 # plot each point individually, this gives same colors as the lines
 for i in range(5):
-    plot(x1[0,i],x1[1,i],'o')
-    #axis('off')
-#    show()
-#show()
-#figure()
-#plot(e[0],e[1],"r*")
+    plot(x2[0,i],x2[1,i],'o')
+title("x2 on image2")
+axis('off')
 show()

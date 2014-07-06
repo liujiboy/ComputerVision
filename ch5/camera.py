@@ -18,10 +18,8 @@ class Camera(object):
         """    Project points in X (4*n array) and normalize coordinates. """
         
         x = dot(self.P,X)
-        print x
         for i in range(3):
             x[i] /= x[2]    
-        print x
         return x
         
         
