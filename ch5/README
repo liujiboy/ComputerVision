@@ -7,3 +7,7 @@ compute_3d.py		compute 3d structure from 2d points and cameras
 compute_epiolar.py	compute epipole and epiolar from 2d points
 compute_camera_3d.py	compute camera matrix from 2d and 3d points
 reconstruction.py	3d reconstruction from two views
+savematches.py		save feature matches
+save3dpoints.py		save 3d points 
+plot3dpoints.py		plot 3d points
+opengl.py		plot 3d points using opengl
